@@ -31,21 +31,20 @@ async def clear(ctx):
 async def on_reaction_add(reaction, user):
     #isolate bot messages
     if reaction.message.author != bot.user:
-        print('we dont care about ppl msg')
         return
 
     #isolate fire emoji amongst reactions
     if reaction.emoji != fire_emoji:
-        print("Not fire emoji, do nothing")
         return
+
     #isolate ppl reactions
     if user.bot:
-        print('bot be advanced these days')
         return
 
     msg = reaction.message
+
+    # not tracking this message (already popped or created in prev session)
     if msg not in message_map:
-        # not tracking this message (already popped or created in prev session)
         return
 
     # Add user to list
@@ -59,10 +58,8 @@ async def on_reaction_add(reaction, user):
     channel = msg.channel
     for user in message_map[msg]:
         await user.send("Get In Here!")
-    # await channel.send('EveryOne is Ready') # change to dm
+
     message_map.pop(msg)
     await msg.delete()
-
-
 
 bot.run(TOKEN)
