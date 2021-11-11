@@ -9,7 +9,6 @@ from discord_slash import SlashCommand, SlashContext
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-# bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 client = commands.Bot(command_prefix=".")
 slash = SlashCommand(client, sync_commands=True)
 
@@ -23,7 +22,7 @@ message_map = {}
     name='ready',
     guild_ids=guild_ids,
 )
-async def _ready(ctx: SlashContext, count: int, content="chilling"):
+async def _ready(ctx: SlashContext, count: int, content: str = "chilling"):
     #retard check
     if count == 1:
         await ctx.message.delete()
