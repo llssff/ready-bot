@@ -2,42 +2,44 @@
 import os
 import re
 from dotenv import load_dotenv
+from discord import *
 from discord.ext import commands
+from discord_slash import SlashCommand, SlashContext
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='/')
+# bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+client = commands.Bot(command_prefix=".")
+slash = SlashCommand(client, sync_commands=True)
+
+guild_ids = [171029138226806785]
+
 fire_emoji = '🔥'
 message_map = {}
 
 
-@bot.command(name='ready')
-async def create(ctx, count: int, content="chilling"):
-
+@slash.slash(
+    name='ready2',
+    guild_ids=guild_ids,
+)
+async def _ready2(ctx: SlashContext, count: int, content="chilling"):
     #retard check
     if count == 1:
         await ctx.message.delete()
         return
 
     msg = await ctx.send(f'{count} attendees\nPurpose: {content}')
-    message_map[msg] = {ctx.message.author}
+    message_map[msg] = {ctx.author}
     await msg.add_reaction(fire_emoji)
-    await ctx.message.delete()
 
 
-@bot.command(name='clear')
-async def clear(ctx):
-    for msg in message_map:
-        await msg.delete()
-    message_map.clear()
-    await ctx.message.delete()
 
 
-@bot.event
+@client.event
 async def on_reaction_add(reaction, user):
     #isolate bot messages
-    if reaction.message.author != bot.user:
+    if reaction.message.author != client.user:
         return
 
     #isolate fire emoji amongst reactions
@@ -48,10 +50,13 @@ async def on_reaction_add(reaction, user):
     if user.bot:
         return
 
-    msg = reaction.message
+    #find message by id in message_map(msg:reaction_author)
+    msg = None
+    for stored in message_map:
+        if stored.id == reaction.message.id:
+            msg = stored
 
-    # not tracking this message (already popped or created in prev session)
-    if msg not in message_map:
+    if not msg:
         return
 
     # Add user to list
@@ -61,7 +66,6 @@ async def on_reaction_add(reaction, user):
     if len(users) != param_count:
         return
 
-    # channel = msg.channel
     param_purpose = "\n".join(msg.content.split("\n")[1:])
     for user in message_map[msg]:
         await user.send(f"You've been summoned for:\n{param_purpose}")
@@ -69,4 +73,4 @@ async def on_reaction_add(reaction, user):
     message_map.pop(msg)
     await msg.delete()
 
-bot.run(TOKEN)
+client.run(TOKEN)
