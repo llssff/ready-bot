@@ -20,10 +20,10 @@ message_map = {}
 
 
 @slash.slash(
-    name='ready2',
+    name='ready',
     guild_ids=guild_ids,
 )
-async def _ready2(ctx: SlashContext, count: int, content="chilling"):
+async def _ready(ctx: SlashContext, count: int, content="chilling"):
     #retard check
     if count == 1:
         await ctx.message.delete()
