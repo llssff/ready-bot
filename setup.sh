@@ -1,1 +1,1 @@
-pip install -U discord dotenv
+pip install -U discord python-dotenv discord-py-slash-command
