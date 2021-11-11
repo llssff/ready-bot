@@ -35,18 +35,15 @@ async def _ready(ctx: SlashContext, count: int, content: str = "chilling"):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    user_id = payload.user_id
-    msg_id = payload.message_id
-
     # step 1: find the message
-    msg = next(filter(lambda m: m.id == msg_id, message_map), None)
+    msg = find_message(payload.message_id)
 
     # could not find the message
     if not msg:
         return
 
     # step 2: find the user in that list
-    user = next(filter(lambda u: u.id == user_id, message_map[msg]), None)
+    user = find_user(payload.user_id, msg)
 
     # somehow couldn't find user in list of reactions saved (author?)
     if not user:
@@ -71,10 +68,8 @@ async def on_reaction_add(reaction, user):
         return
 
     #find message by id in message_map(msg:reaction_author)
-    msg = None
-    for stored in message_map:
-        if stored.id == reaction.message.id:
-            msg = stored
+    #_ready stored SlashMessage where as reaction.message is of type Message
+    msg = find_message(reaction.message.id)
 
     if not msg:
         return
@@ -87,11 +82,16 @@ async def on_reaction_add(reaction, user):
         return
 
     param_purpose = "\n".join(msg.content.split("\n")[1:])
-    for user in message_map[msg]:
-        await user.send(f"You've been summoned for:\n{param_purpose}")
+    map(lambda u: await u.send(f"You've been summoned for:\n{param_purpose}"), message_map[msg])
 
     message_map.pop(msg)
     await msg.delete()
+
+def find_message(message_id: int):
+    return next(filter(lambda m: m.id == message_id, message_map), None)
+
+def find_user(user_id: int, msg):
+    return next(filter(lambda u: u.id == user_id, message_map[msg]), None)
 
 
 client.run(TOKEN)
