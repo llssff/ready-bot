@@ -33,6 +33,27 @@ async def _ready(ctx: SlashContext, count: int, content: str = "chilling"):
     await msg.add_reaction(fire_emoji)
 
 
+@client.event
+async def on_raw_reaction_remove(payload):
+    user_id = payload.user_id
+    msg_id = payload.message_id
+
+    # step 1: find the message
+    msg = next(filter(lambda m: m.id == msg_id, message_map), None)
+
+    # could not find the message
+    if not msg:
+        return
+
+    # step 2: find the user in that list
+    user = next(filter(lambda u: u.id == user_id, message_map[msg]), None)
+
+    # somehow couldn't find user in list of reactions saved (author?)
+    if not user:
+        return
+
+    # step 3: delete them
+    message_map[msg].remove(user)
 
 
 @client.event
@@ -71,5 +92,6 @@ async def on_reaction_add(reaction, user):
 
     message_map.pop(msg)
     await msg.delete()
+
 
 client.run(TOKEN)
