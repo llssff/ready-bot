@@ -25,6 +25,7 @@ async def _cancel(ctx: SlashContext):
     for msg in list(message_map):
         message_map.pop(msg)
         await msg.delete()
+    await ctx.send('Deleted all pending ready-checks', delete_after=3)
 
 @slash.slash(
     name='ready',
